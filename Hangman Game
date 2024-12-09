@@ -1,0 +1,118 @@
+import customtkinter as ctk
+import random
+
+# Define color palette
+BACKGROUND_COLOR = "#EDE7F6"
+TEXT_COLOR = "#4A148C"
+SECONDARY_TEXT_COLOR = "#7E57C2"
+BUTTON_BACKGROUND_COLOR = "#8E24AA"
+BUTTON_TEXT_COLOR = "#FFFFFF"
+INPUT_BACKGROUND_COLOR = "#D1C4E9"
+INPUT_TEXT_COLOR = "#311B92"
+
+# Word list for Hangman
+words = ["apple", "chocolate", "egg", "meat", "oregano", "chiliflakes"]
+
+# Initialize the main window
+app = ctk.CTk()
+app.title("Hangman Game")
+app.geometry("500x400")
+app.configure(bg=BACKGROUND_COLOR)
+
+# Choose a random word from the list
+secret_word = random.choice(words)
+display_word = ['_' for _ in secret_word]
+attempts = 6
+
+
+# Function to update the display
+def update_display():
+    display_label.configure(text=' '.join(display_word))
+
+
+# Function to handle guesses
+def guess_letter():
+    global attempts
+    letter = entry.get().lower()
+    entry.delete(0, ctk.END)
+    if letter in secret_word:
+        for position in range(len(secret_word)):
+            if secret_word[position] == letter:
+                display_word[position] = letter
+    else:
+        attempts -= 1
+        attempts_label.configure(text=f"Attempts Left: {attempts}")
+        if attempts == 0:
+            end_game("lose")
+            return
+
+    update_display()
+    if '_' not in display_word:
+        end_game("win")
+
+
+# Function to end the game and show result in a new window
+def end_game(result):
+    result_window = ctk.CTkToplevel(app)
+    result_window.title("Game Over")
+    result_window.geometry("300x200")
+    result_window.configure(bg=BACKGROUND_COLOR)
+
+    if result == "win":
+        message = "Congratulations! You've guessed the word."
+    else:
+        message = f"Game Over! The word was: {secret_word}"
+
+    result_label = ctk.CTkLabel(
+        result_window, text=message, text_color=TEXT_COLOR,
+        font=("Helvetica", 18), bg_color=BACKGROUND_COLOR
+    )
+    result_label.pack(pady=20)
+
+    close_button = ctk.CTkButton(
+        result_window, text="Close", command=result_window.destroy,
+        fg_color=BUTTON_BACKGROUND_COLOR, text_color=BUTTON_TEXT_COLOR
+    )
+    close_button.pack(pady=10)
+
+    entry.configure(state=ctk.DISABLED)
+    guess_button.configure(state=ctk.DISABLED)
+
+
+# Create display label
+display_label = ctk.CTkLabel(
+    app, text=' '.join(display_word), text_color=TEXT_COLOR,
+    font=("Helvetica", 24), bg_color=BACKGROUND_COLOR
+)
+display_label.pack(pady=20)
+
+# Create entry for guesses
+entry = ctk.CTkEntry(
+    app, bg_color=INPUT_BACKGROUND_COLOR, text_color=INPUT_TEXT_COLOR,
+    border_color=TEXT_COLOR
+)
+entry.pack(pady=10)
+
+# Create a button to submit guesses
+guess_button = ctk.CTkButton(
+    app, text="Guess", command=guess_letter,
+    fg_color=BUTTON_BACKGROUND_COLOR, text_color=BUTTON_TEXT_COLOR
+)
+guess_button.pack(pady=10)
+
+# Create attempts label
+attempts_label = ctk.CTkLabel(
+    app, text=f"Attempts Left: {attempts}", text_color=SECONDARY_TEXT_COLOR,
+    bg_color=BACKGROUND_COLOR
+)
+attempts_label.pack(pady=10)
+
+hint = ctk.CTkLabel(
+    app, text=f" try to start with letter E first \n"
+              f"related with food", text_color=SECONDARY_TEXT_COLOR,
+    bg_color=BACKGROUND_COLOR
+)
+hint.pack(pady=10)
+
+# Start the main loop
+app.mainloop()
